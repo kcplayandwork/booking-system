@@ -1,0 +1,68 @@
+body {
+  margin: 0;
+  background-color: #F9FAFB;
+  font-family: 'Inter', 'Roboto', 'Noto Sans TC', sans-serif;
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.ant-layout {
+  min-height: 100vh;
+}
+
+.timeline-grid {
+  display: grid;
+  grid-template-columns: 120px repeat(10, 1fr); /* 9:00 to 19:00 = 10 hours */
+  border-top: 1px solid #e8e8e8;
+  border-left: 1px solid #e8e8e8;
+}
+
+.timeline-header, .timeline-cell {
+  border-right: 1px solid #e8e8e8;
+  border-bottom: 1px solid #e8e8e8;
+  padding: 8px;
+  text-align: center;
+  position: relative;
+}
+
+.timeline-room {
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #FFFFFF;
+}
+
+.timeline-slot {
+  height: 100%;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.timeline-slot:hover {
+  background-color: #E6F4F0;
+}
+
+.booking-block {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  background-color: #007A5E;
+  color: #fff;
+  border-radius: 4px;
+  padding: 2px 4px;
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  z-index: 1;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.booking-block.ghost {
+  background-color: #B8962E;
+}
