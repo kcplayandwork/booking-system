@@ -1,6 +1,12 @@
 import axios from 'axios';
 
 // Mock data for testing without backend
+export const currentUser = {
+  name: '王小明',
+  empId: '12345',
+  email: 'xiaoming@cathaybk.com.tw'
+};
+
 const mockRooms = [
   { id: 1, name: '台北101', building: '台北101大樓', floor: '12F', capacity: 20, amenities: '投影機、視訊設備、白板', color: '#007A5E', is_active: true },
   { id: 2, name: '信義廳', building: '松仁總行', floor: '12F', capacity: 10, amenities: '電視螢幕、白板', color: '#007A5E', is_active: true },
@@ -114,4 +120,26 @@ export const findAvailableRooms = async (date: string, currentHour: number, capa
     !activeNowRooms.has(r.id) &&
     (building && building !== '所有大樓' ? r.building === building : true)
   );
+};
+
+export const findOccupiedBookings = async (date: string, currentHour: number, capacity: number, building?: string) => {
+  const todaysBookings = mockBookings.filter(b => b.date === date);
+  const occupied = todaysBookings.filter(b => b.start_hour <= currentHour && b.end_hour > currentHour && !b.checked_out);
+  
+  // 找出這些被佔用的會議室，並且符合人數與大樓條件
+  const results: any[] = [];
+  occupied.forEach(booking => {
+    const room = mockRooms.find(r => r.id === booking.room_id);
+    if (room && room.capacity >= capacity && (building && building !== '所有大樓' ? room.building === building : true)) {
+      results.push({
+        ...booking,
+        room_name: room.name,
+        room_floor: room.floor,
+        room_building: room.building,
+        room_capacity: room.capacity
+      });
+    }
+  });
+
+  return results;
 };

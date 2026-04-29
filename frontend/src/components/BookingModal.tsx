@@ -1,6 +1,6 @@
 import React from 'react';
 import { Modal, Form, Input, Select, message } from 'antd';
-import { createBooking } from '../api';
+import { createBooking, currentUser } from '../api';
 import { format } from 'date-fns';
 
 interface BookingModalProps {
@@ -21,6 +21,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ visible, onCancel, onSucces
       form.setFieldsValue({
         start_hour: selectedHour,
         duration: 1,
+        capacity: 4
       });
     }
   }, [visible, selectedHour, form]);
@@ -32,7 +33,10 @@ const BookingModal: React.FC<BookingModalProps> = ({ visible, onCancel, onSucces
       const payload = {
         room_id: selectedRoom.id,
         title: values.title,
-        booker_name: values.booker_name,
+        booker_name: currentUser.name,
+        emp_id: currentUser.empId,
+        email: currentUser.email,
+        capacity: values.capacity,
         date: format(selectedDate, 'yyyy-MM-dd'),
         start_hour: values.start_hour,
         end_hour: values.start_hour + values.duration,
@@ -82,12 +86,18 @@ const BookingModal: React.FC<BookingModalProps> = ({ visible, onCancel, onSucces
         >
           <Input placeholder="例如：產品發布準備會議" />
         </Form.Item>
+        <div style={{ padding: '12px', backgroundColor: '#F9FAFB', borderRadius: '8px', marginBottom: '16px', border: '1px solid #E5E7EB' }}>
+          <div style={{ color: '#6B7280', fontSize: '12px', marginBottom: '4px' }}>預訂人資訊 (系統自動帶入)</div>
+          <div style={{ color: '#1A1A1A', fontWeight: 'bold' }}>{currentUser.name}</div>
+          <div style={{ color: '#6B7280', fontSize: '13px' }}>員編: {currentUser.empId}</div>
+          <div style={{ color: '#6B7280', fontSize: '13px' }}>Email: {currentUser.email}</div>
+        </div>
         <Form.Item
-          name="booker_name"
-          label="預訂者姓名 / 員工編號"
-          rules={[{ required: true, message: '請輸入預訂者' }]}
+          name="capacity"
+          label="開會人數"
+          rules={[{ required: true, message: '請輸入開會人數' }]}
         >
-          <Input placeholder="例如：王小明 / 12345" />
+          <Input type="number" min={1} max={selectedRoom?.capacity} suffix="人" />
         </Form.Item>
         <Form.Item
           name="start_hour"
