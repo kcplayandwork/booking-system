@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { DatePicker, Spin, Tag, Tooltip, message, Modal } from 'antd';
 import { LeftOutlined, RightOutlined, WarningOutlined } from '@ant-design/icons';
-import { getRooms, getBookings } from '../api';
+import { getRooms, getBookings, formatTime } from '../api';
 import { format, addDays, subDays } from 'date-fns';
 import BookingModal from '../components/BookingModal';
 
-const HOURS = Array.from({ length: 10 }, (_, i) => i + 9); // 09 to 18 (representing 09:00-10:00 to 18:00-19:00)
+const HOURS = Array.from({ length: 10 }, (_, i) => i + 9); // 09 to 18 (for header)
+const INTERVALS = Array.from({ length: 40 }, (_, i) => 9 + i * 0.25); // 15-min intervals
 
 const TimelineView: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -38,13 +39,13 @@ const TimelineView: React.FC = () => {
     fetchData();
   }, [selectedDate]);
 
-  const handleCellClick = (room: any, hour: number) => {
+  const handleCellClick = (room: any, time: number) => {
     // Check if occupied
-    const isOccupied = bookings.some(b => b.room_id === room.id && hour >= b.start_hour && hour < b.end_hour);
+    const isOccupied = bookings.some(b => b.room_id === room.id && time >= b.start_hour && time < b.end_hour);
     if (isOccupied) return;
 
     setSelectedRoom(room);
-    setSelectedHour(hour);
+    setSelectedHour(time);
     setModalVisible(true);
   };
 
@@ -61,21 +62,22 @@ const TimelineView: React.FC = () => {
     });
   };
 
-  const renderCell = (room: any, hour: number) => {
-    const booking = bookings.find(b => b.room_id === room.id && hour >= b.start_hour && hour < b.end_hour);
-    const isStart = booking && booking.start_hour === hour;
+  const renderCell = (room: any, time: number) => {
+    const booking = bookings.find(b => b.room_id === room.id && time >= b.start_hour && time < b.end_hour);
+    const isStart = booking && booking.start_hour === time;
     
     if (booking) {
-      if (!isStart) return null; // handled by colspan equivalent conceptually, but here we just render wide cells
+      if (!isStart) return null; // handled by colspan equivalent conceptually
       const duration = booking.end_hour - booking.start_hour;
-      const isGhost = booking.start_hour < new Date().getHours() && !booking.checked_in && format(selectedDate, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd');
+      const flexBlocks = duration / 0.25;
+      const isGhost = booking.start_hour < (new Date().getHours() + new Date().getMinutes() / 60) && !booking.checked_in && format(selectedDate, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd');
 
       return (
         <div 
-          key={`${room.id}-${hour}`} 
+          key={`${room.id}-${time}`} 
           onClick={() => handleOccupiedCellClick(booking)}
           style={{ 
-            flex: duration, 
+            flex: flexBlocks, 
             backgroundColor: isGhost ? '#ffccc7' : '#007A5E',
             color: isGhost ? '#cf1322' : 'white',
             margin: '2px',
@@ -98,18 +100,19 @@ const TimelineView: React.FC = () => {
 
     return (
       <div 
-        key={`${room.id}-${hour}`} 
+        key={`${room.id}-${time}`} 
         style={{ 
           flex: 1, 
           backgroundColor: '#F3F4F6', 
           margin: '2px', 
           borderRadius: '4px',
           cursor: 'pointer',
-          transition: 'background-color 0.2s'
+          transition: 'background-color 0.2s',
+          borderRight: (time * 4) % 4 === 3 ? '1px solid #E5E7EB' : 'none'
         }}
         onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#E5E7EB'}
         onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#F3F4F6'}
-        onClick={() => handleCellClick(room, hour)}
+        onClick={() => handleCellClick(room, time)}
       />
     );
   };
@@ -135,8 +138,8 @@ const TimelineView: React.FC = () => {
             <div style={{ width: '150px', flexShrink: 0, fontWeight: 'bold', color: '#6B7280' }}>會議室</div>
             <div style={{ display: 'flex', flex: 1 }}>
               {HOURS.map(h => (
-                <div key={h} style={{ flex: 1, textAlign: 'center', fontSize: '12px', color: '#6B7280' }}>
-                  {`${h.toString().padStart(2, '0')}:00`}-{`${(h+1).toString().padStart(2, '0')}:00`}
+                <div key={h} style={{ flex: 4, textAlign: 'left', paddingLeft: '4px', fontSize: '12px', color: '#6B7280', borderLeft: '1px solid #E5E7EB' }}>
+                  {formatTime(h)}
                 </div>
               ))}
             </div>
@@ -149,10 +152,10 @@ const TimelineView: React.FC = () => {
                 <div style={{ fontSize: '12px', color: '#6B7280' }}>{room.floor} | {room.capacity}人</div>
               </div>
               <div style={{ display: 'flex', flex: 1 }}>
-                {HOURS.map(h => {
-                  const booking = bookings.find(b => b.room_id === room.id && h >= b.start_hour && h < b.end_hour);
-                  if (booking && booking.start_hour !== h) return null; // Skip if it's not the start hour (cell merged)
-                  return renderCell(room, h);
+                {INTERVALS.map(t => {
+                  const booking = bookings.find(b => b.room_id === room.id && t >= b.start_hour && t < b.end_hour);
+                  if (booking && booking.start_hour !== t) return null; // Skip if it's not the start hour (cell merged)
+                  return renderCell(room, t);
                 })}
               </div>
             </div>

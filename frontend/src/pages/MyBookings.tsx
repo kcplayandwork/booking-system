@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Table, Button, Tag, Space, message, Popconfirm } from 'antd';
-import { getBookings, checkInBooking, checkoutBooking, cancelBooking } from '../api';
+import { getBookings, checkInBooking, checkoutBooking, cancelBooking, formatTime } from '../api';
 import { format } from 'date-fns';
 
 const MyBookings: React.FC = () => {
@@ -65,7 +65,11 @@ const MyBookings: React.FC = () => {
     {
       title: '時間',
       key: 'time',
-      render: (text: any, record: any) => `${record.start_hour.toString().padStart(2, '0')}:00 - ${record.end_hour.toString().padStart(2, '0')}:00`,
+      render: (text: any, record: any) => (
+        <div style={{ color: '#007A5E', fontWeight: 'bold' }}>
+          {formatTime(record.start_hour)} - {formatTime(record.end_hour)}
+        </div>
+      ),
     },
     {
       title: '主題',

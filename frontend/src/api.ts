@@ -15,11 +15,22 @@ const mockRooms = [
   { id: 5, name: '南港會議室', building: '南港資訊大樓', floor: '13F', capacity: 30, amenities: '投影機、視訊設備、白板、麥克風', color: '#007A5E', is_active: true }
 ];
 
+export const formatTime = (decimalHour: number) => {
+  const hours = Math.floor(decimalHour);
+  const minutes = Math.round((decimalHour - hours) * 60);
+  return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+};
+
+export const getCurrentDecimalHour = () => {
+  const now = new Date();
+  return now.getHours() + now.getMinutes() / 60;
+};
+
 let mockBookings = [
   { id: 1, room_id: 1, title: '專案啟動會議', booker_name: '王大明', date: new Date().toISOString().split('T')[0], start_hour: 10, end_hour: 12, checked_in: false, checked_out: false, room_name: '台北101', room_floor: '12F' },
-  { id: 2, room_id: 2, title: '部門週會', booker_name: '李小梅', date: new Date().toISOString().split('T')[0], start_hour: 14, end_hour: 16, checked_in: true, checked_out: false, room_name: '信義廳', room_floor: '12F' },
+  { id: 2, room_id: 2, title: '部門週會', booker_name: '李小梅', date: new Date().toISOString().split('T')[0], start_hour: 14, end_hour: 15.5, checked_in: true, checked_out: false, room_name: '信義廳', room_floor: '12F' },
   // Ghost booking (early in the morning, not checked in)
-  { id: 3, room_id: 3, title: '幽靈預訂測試', booker_name: '測試員', date: new Date().toISOString().split('T')[0], start_hour: 9, end_hour: 10, checked_in: false, checked_out: false, room_name: '大安室', room_floor: '11F' }
+  { id: 3, room_id: 3, title: '幽靈預訂測試', booker_name: '測試員', date: new Date().toISOString().split('T')[0], start_hour: 9.25, end_hour: 10, checked_in: false, checked_out: false, room_name: '大安室', room_floor: '11F' }
 ];
 
 export const getRooms = async () => {
@@ -62,7 +73,7 @@ export const checkoutBooking = async (id: number, currentHour: number) => {
     booking.checked_out = true;
     // 如果提早結束，釋放剩下的時間
     if (currentHour < booking.end_hour && currentHour >= booking.start_hour) {
-      booking.end_hour = currentHour + 1; 
+      booking.end_hour = currentHour; 
     }
   }
   return booking;

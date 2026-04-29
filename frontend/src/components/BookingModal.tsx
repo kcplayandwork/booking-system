@@ -1,6 +1,6 @@
 import React from 'react';
 import { Modal, Form, Input, Select, message } from 'antd';
-import { createBooking, currentUser } from '../api';
+import { createBooking, currentUser, formatTime } from '../api';
 import { format } from 'date-fns';
 
 interface BookingModalProps {
@@ -59,10 +59,20 @@ const BookingModal: React.FC<BookingModalProps> = ({ visible, onCancel, onSucces
     }
   };
 
-  const hourOptions = Array.from({ length: 11 }, (_, i) => i + 9).map(h => ({
+  const hourOptions = Array.from({ length: 40 }, (_, i) => 9 + i * 0.25).map(h => ({
     value: h,
-    label: `${h.toString().padStart(2, '0')}:00`
+    label: formatTime(h)
   }));
+
+  const durationOptions = [
+    { value: 0.25, label: '15 分鐘' },
+    { value: 0.5, label: '30 分鐘' },
+    { value: 0.75, label: '45 分鐘' },
+    { value: 1, label: '1 小時' },
+    { value: 1.5, label: '1.5 小時' },
+    { value: 2, label: '2 小時' },
+    { value: 3, label: '3 小時' },
+  ];
 
   return (
     <Modal
@@ -111,11 +121,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ visible, onCancel, onSucces
           label="使用時數"
           rules={[{ required: true, message: '請選擇使用時數' }]}
         >
-          <Select options={[
-            { value: 1, label: '1 小時' },
-            { value: 2, label: '2 小時' },
-            { value: 3, label: '3 小時' },
-          ]} />
+          <Select options={durationOptions} />
         </Form.Item>
         <Form.Item
           name="remarks"

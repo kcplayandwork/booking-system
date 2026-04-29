@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Row, Col, Card, Statistic, Button, message, Select, Modal } from 'antd';
 import { AppstoreOutlined, CheckCircleOutlined, WarningOutlined, SyncOutlined } from '@ant-design/icons';
-import { getDashboardStats, releaseGhosts, findAvailableRooms, findOccupiedBookings, currentUser } from '../api';
+import { getDashboardStats, releaseGhosts, findAvailableRooms, findOccupiedBookings, currentUser, getCurrentDecimalHour } from '../api';
 import { format } from 'date-fns';
 import BookingModal from '../components/BookingModal';
 
@@ -21,7 +21,7 @@ const Dashboard: React.FC = () => {
   const fetchStats = async () => {
     try {
       const today = format(new Date(), 'yyyy-MM-dd');
-      const currentHour = new Date().getHours();
+      const currentHour = getCurrentDecimalHour();
       const data = await getDashboardStats(today, currentHour);
       setStats(data);
     } catch (error) {
@@ -37,7 +37,7 @@ const Dashboard: React.FC = () => {
     setLoading(true);
     try {
       const today = format(new Date(), 'yyyy-MM-dd');
-      const currentHour = new Date().getHours();
+      const currentHour = getCurrentDecimalHour();
       const res = await releaseGhosts(today, currentHour);
       message.success(res.message);
       fetchStats();
@@ -52,7 +52,7 @@ const Dashboard: React.FC = () => {
     setSearchLoading(true);
     try {
       const today = format(new Date(), 'yyyy-MM-dd');
-      const currentHour = new Date().getHours();
+      const currentHour = getCurrentDecimalHour();
       const rooms = await findAvailableRooms(today, currentHour, searchCapacity, searchBuilding);
       setAvailableRooms(rooms);
       
@@ -290,7 +290,7 @@ const Dashboard: React.FC = () => {
           handleSearchAvailableRooms(); // Refresh search results
         }}
         selectedRoom={selectedRoom}
-        selectedHour={new Date().getHours()}
+        selectedHour={Math.floor(getCurrentDecimalHour() * 4) / 4}
         selectedDate={new Date()}
       />
     </div>
